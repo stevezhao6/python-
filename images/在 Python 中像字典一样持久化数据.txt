@@ -1,0 +1,36 @@
+在<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们知道，如果我们在 Python 中想把一段数据持久化到硬盘上，最简单的办法就是写文件：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> open(<span class="string">'data.txt'</span>, <span class="string">'w'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:</span><br/><span class="line">    f.write(<span class="string">'username：1234567\n'</span>)</span><br/><span class="line">    f.write(<span class="string">'password: 9876543\n'</span>)</span><br/></pre></td></tr></table></figure>
+<p>但这样做有一个弊端，就是在读取数据的时候，我们把整个数据读入内存以后，还需要单独写一段代码，用来区分哪里是<code>username</code>对应的值，哪些是<code>password</code>对应的值。</p>
+<a id="more"/>
+<p>实际上，在 Python 中，我们可以使用<code>shelve</code>模块，像读写字典一样持久化存储数据。例如，在 <code>write.py</code>文件中，我们写如下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> shelve</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> shelve.open(<span class="string">'data'</span>) <span class="keyword">as</span> db:</span><br/><span class="line">    db[<span class="string">'username'</span>] = <span class="number">12345678</span></span><br/><span class="line">    db[<span class="string">'password'</span>] = <span class="number">98765432</span></span><br/></pre></td></tr></table></figure>
+<p>运行完成以后，会在<code>write.py</code>所在的文件夹下面生成一个<code>data.db</code>文件，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-16-22-07-33.png" alt=""/></p>
+<p>现在，我们再写一个<code>read.py</code>，其内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> shelve</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> shelve.open(<span class="string">'data'</span>) <span class="keyword">as</span> db:</span><br/><span class="line">    username = db[<span class="string">'username'</span>]</span><br/><span class="line">    password = db[<span class="string">'password'</span>]</span><br/><span class="line"/><br/><span class="line">print(<span class="string">f'账号为：<span class="subst">{username}</span>'</span>)</span><br/><span class="line">print(<span class="string">f'密码为：<span class="subst">{password}</span>'</span>)</span><br/></pre></td></tr></table></figure>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-16-22-09-20.png" alt=""/></p>
+<p>不需要我们单独做额外的解析，就能像读取字典一样读取持久化到硬盘中的数据。</p>
+<p>并且，原来写文本文件的时候，如果我们的数据是字典或者列表，直接写入还会报错，必需先转成 JSON 字符串才能写入。</p>
+<p>但<code>shelve</code>模块没有这个限制，所有能被 <code>pickle</code>的对象，都可以存入，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> shelve</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> shelve.open(<span class="string">'data'</span>) <span class="keyword">as</span> db:</span><br/><span class="line">    db[<span class="string">'complex_data'</span>] = [{<span class="string">'a'</span>: <span class="number">1</span>, <span class="string">'b'</span>: [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]}, <span class="number">2</span>, <span class="string">'a'</span>]</span><br/></pre></td></tr></table></figure>
+<p>需要注意的是，<code>shelve</code>模块底层基于<code>pickle</code>模块，所以当别人传给你一个 <code>shelve</code>生成的文件时，不能贸然打开，否则可能会执行危险的代码。</p>
+<p>另外，<code>shelve</code>模块只支持多线程同时读取。不支持多线程写入，也不支持同时读写。</p>
+<p>关于<code>shelve</code>的更多参数，可以参阅它的<a href="https://docs.python.org/3.8/library/shelve.html" target="_blank" rel="noopener">官方文档</a>.</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

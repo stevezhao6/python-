@@ -1,0 +1,29 @@
+P<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在使用Python做爬虫的过程中，经常遇到字符编码出问题的情况。<br/><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">UnicodeEncodeError: 'ascii' codec can't encode character u'\u6211' in position 0: ordinal not in range(128)</span><br/></pre></td></tr></table></figure></p>
+<p>针对这种情况，网上已经有很多原理性的分析了，我在此就不一一列举。然而，我相信很多人，即便看完原理以后也不知道怎么解决。</p>
+<p>我自己琢磨出一种快速解决的方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line">def get_page_sourse(url):</span><br/><span class="line">req = urllib2.Request(url)</span><br/><span class="line">   for key in headers:</span><br/><span class="line">       req.add_header(key,headers[key])</span><br/><span class="line">       content = urllib2.urlopen(req).read()</span><br/><span class="line">       return content</span><br/></pre></td></tr></table></figure>
+<p> 这个函数使用urllib2扒取了一个网页的源代码。并返回了这个源代码。当我们使用文件操作准备把content的内容写到一个txt文件中时，就会出现编码错误。</p>
+<p>在这种情况下，如何快速的排除问题？</p>
+<p>只需要将最后一行改成下面这样就可以了。<br/><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">return content.decode('A','ingore').encode('B','ignore')</span><br/></pre></td></tr></table></figure></p>
+<p>这里，A和B分别可以使gbk, gb2312,utf-8,它们排列组合一下，一共只有6种组合方式</p>
+<p>例如：<br/><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line">return content.decode('gbk','ingore').encode('utf-8','ignore')</span><br/><span class="line">return content.decode('utf-8','ingore').encode('gb2312','ignore')</span><br/><span class="line">...</span><br/></pre></td></tr></table></figure></p>
+<p>我使用这种方式，解决了所有的我遇到的Python的编码错误。虽然是一个一个的试，但是也用不了2分钟就能搞定。</p>
+<p>至于背后原理什么的，程序跑通了以后再慢慢研究吧。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

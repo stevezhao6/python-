@@ -1,0 +1,49 @@
+G<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>GeneralNewsExtractor</code>以下简称<code>GNE</code>是一个新闻网页通用抽取器，能够在不指定任何抽取规则的情况下，把新闻网站的正文提取出来。</p>
+<p>我们来看一下它的基本使用方法。</p>
+<a id="more"/>
+<h2 id="安装-GNE"><a href="#安装-GNE" class="headerlink" title="安装 GNE"/>安装 GNE</h2><p>使用 pip 安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">pip install --upgrade git+https://github.com/kingname/GeneralNewsExtractor.git</span><br/></pre></td></tr></table></figure>
+<p>当然你也可以使用<code>pipenv</code>安装：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">pipenv install git+https://github.com/kingname/GeneralNewsExtractor.git<span class="comment">#egg=gne</span></span><br/></pre></td></tr></table></figure>
+<h2 id="获取新闻网页源代码"><a href="#获取新闻网页源代码" class="headerlink" title="获取新闻网页源代码"/>获取新闻网页源代码</h2><p>GNE 现在不会，将来也不会提供网页请求的功能，所以你需要自行想办法获取<code>经过渲染以后的</code>网页源代码。你可以使用<code>Selenium</code>或者<code>Pyppeteer</code>或者直接从浏览器上复制。</p>
+<p>这里演示如何直接从浏览器中复制网页的源代码：</p>
+<ol>
+<li>在 Chrome 浏览器中打开对应页面，然后开启开发者工具，如下图所示：</li>
+</ol>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-25-22-21-06.png" alt=""/></p>
+<ol start="2">
+<li>在Elements标签页定位到标签，并右键，选择Copy-Copy OuterHTML，如下图所示</li>
+</ol>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-25-22-22-12.png" alt=""/></p>
+<ol start="3">
+<li>把源代码保存为1.html</li>
+</ol>
+<h2 id="提取正文信息"><a href="#提取正文信息" class="headerlink" title="提取正文信息"/>提取正文信息</h2><p>编写如下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gne <span class="keyword">import</span> GeneralNewsExtractor</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> open(<span class="string">'1.html'</span>) <span class="keyword">as</span> f:</span><br/><span class="line">    html = f.read()</span><br/><span class="line"/><br/><span class="line">extractor = GeneralNewsExtractor()</span><br/><span class="line">result = extractor.extract(html)</span><br/><span class="line">print(result)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-25-22-41-02.png" alt=""/></p>
+<h2 id="这次更新了什么"><a href="#这次更新了什么" class="headerlink" title="这次更新了什么"/>这次更新了什么</h2><p>在最新更新的 v0.04版本中，开放了正文图片提取功能，与返回正文源代码功能。其中返回图片 URL 的功能在上面已经演示了，结果中的<code>images</code>字段就是正文中的图片。</p>
+<p>那么怎么返回正文源代码呢？只需要增加一个参数<code>with_body_html=True</code>即可：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gne <span class="keyword">import</span> GeneralNewsExtractor</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> open(<span class="string">'1.html'</span>) <span class="keyword">as</span> f:</span><br/><span class="line">    html = f.read()</span><br/><span class="line"/><br/><span class="line">extractor = GeneralNewsExtractor()</span><br/><span class="line">result = extractor.extract(html, with_body_html=<span class="literal">True</span>)</span><br/><span class="line">print(result)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-25-22-42-45.png" alt=""/></p>
+<p>返回结果中的<code>body_html</code>就是正文的 html 源代码。</p>
+<p>关于 GNE 的深入使用，可以访问GNE 的Github: <a href="https://github.com/kingname/GeneralNewsExtractor。" target="_blank" rel="noopener">https://github.com/kingname/GeneralNewsExtractor。</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

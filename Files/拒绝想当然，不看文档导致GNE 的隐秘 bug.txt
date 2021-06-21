@@ -1,0 +1,46 @@
+拒<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/kingname/GeneralNewsExtractor" target="_blank" rel="noopener">GNE</a>上线4天，已经有很多朋友通过它来编写自己的新闻类网页通用爬虫。</p>
+<a id="more"/>
+<p>今天有一个用户来跟我反馈，GNE 0.1.4版本在提取澎湃新闻时，只能提取一小部分的内容。</p>
+<p>一开始我以为是提取算法有问题，Debug 了半天，最后才发现，是新闻正文在预处理的时候，就被提前<code>删除</code>了！</p>
+<p>为了解释这个问题，我们用一小段 HTML 代码来还原当时的场景：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/></pre></td><td class="code"><pre><span class="line">h = <span class="string">'''</span></span><br/><span class="line"><span class="string">&lt;html&gt;</span></span><br/><span class="line"><span class="string">    &lt;body&gt;</span></span><br/><span class="line"><span class="string">        &lt;div class="txt"&gt;</span></span><br/><span class="line"><span class="string">        第一行</span></span><br/><span class="line"><span class="string">        &lt;p class="con" /&gt;</span></span><br/><span class="line"><span class="string">        第二行</span></span><br/><span class="line"><span class="string">        &lt;p class="con" /&gt;</span></span><br/><span class="line"><span class="string">        第三行</span></span><br/><span class="line"><span class="string">        &lt;/div&gt;</span></span><br/><span class="line"><span class="string">    &lt;/body&gt;</span></span><br/><span class="line"><span class="string">&lt;/html&gt;</span></span><br/><span class="line"><span class="string">'''</span></span><br/></pre></td></tr></table></figure>
+<p>阅读过 GNE 源代码的朋友都知道，GNE 会在预处理阶段尽可能移除没什么用的 HTML 标签。例如上面这段代码中的两行<code>&lt;p class="con" /&gt;</code>都属于会干扰提取结果，且对提取没有任何帮助的标签。</p>
+<p>于是我们使用 lxml 库的方法来移除它：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lxml.html <span class="keyword">import</span> fromstring</span><br/><span class="line"/><br/><span class="line">selector = fromstring(h)</span><br/><span class="line">useless_list = selector.xpath(<span class="string">'//p[@class="con"]'</span>)</span><br/><span class="line"/><br/><span class="line"><span class="keyword">for</span> useless <span class="keyword">in</span> useless_list:</span><br/><span class="line">    useless.getparent().remove(useless)</span><br/></pre></td></tr></table></figure>
+<p>根据想当然的理论：</p>
+<ol>
+<li>找到<code>&lt;p class="con" /&gt;</code>标签</li>
+<li>找到它的父标签</li>
+<li>从父标签里面把这两个无效标签移除掉</li>
+</ol>
+<p>整个过程看起来没有问题，并且预期移除以后的 HTML 应该是这样的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/></pre></td><td class="code"><pre><span class="line">h = <span class="string">'''</span></span><br/><span class="line"><span class="string">&lt;html&gt;</span></span><br/><span class="line"><span class="string">    &lt;body&gt;</span></span><br/><span class="line"><span class="string">        &lt;div class="txt"&gt;</span></span><br/><span class="line"><span class="string">        第一行</span></span><br/><span class="line"><span class="string">        </span></span><br/><span class="line"><span class="string">        第二行</span></span><br/><span class="line"><span class="string">        </span></span><br/><span class="line"><span class="string">        第三行</span></span><br/><span class="line"><span class="string">        &lt;/div&gt;</span></span><br/><span class="line"><span class="string">    &lt;/body&gt;</span></span><br/><span class="line"><span class="string">&lt;/html&gt;</span></span><br/><span class="line"><span class="string">'''</span></span><br/></pre></td></tr></table></figure>
+<p>但实际上，现实情况与想当然的情况自然不一样。真正的输出结果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2020-01-04-16-12-49.png" alt=""/></p>
+<p><code>&lt;div class="txt"&gt;</code>这个标签下面的<code>text()</code>有三行，分别为<code>第一行</code>、<code>第二行</code>、<code>第三行</code>。但是使用上面的代码移除时，<code>第二行</code>与<code>第三行</code>都一并被删除了。</p>
+<p>这是因为，这就是<code>ElementTree.remove</code>这个方法的行为。它不仅会移除这个节点，还会移除这个节点父节点的 text()中，位于这个节点后面的所有内容。</p>
+<p>所以，正常的做法应该是直接调用要被移除这个节点的<code>.drop_tag()</code>方法。我们修改一下上面的代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/><span class="line">20</span><br/><span class="line">21</span><br/><span class="line">22</span><br/><span class="line">23</span><br/><span class="line">24</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lxml.html <span class="keyword">import</span> fromstring</span><br/><span class="line"><span class="keyword">from</span> html <span class="keyword">import</span> unescape</span><br/><span class="line"><span class="keyword">from</span> lxml.html <span class="keyword">import</span> etree</span><br/><span class="line"/><br/><span class="line">h = <span class="string">'''</span></span><br/><span class="line"><span class="string">&lt;html&gt;</span></span><br/><span class="line"><span class="string">    &lt;body&gt;</span></span><br/><span class="line"><span class="string">        &lt;div class="txt"&gt;</span></span><br/><span class="line"><span class="string">        第一行</span></span><br/><span class="line"><span class="string">        &lt;p class="con" /&gt;</span></span><br/><span class="line"><span class="string">        第二行</span></span><br/><span class="line"><span class="string">        &lt;p class="con" /&gt;</span></span><br/><span class="line"><span class="string">        第三行</span></span><br/><span class="line"><span class="string">        &lt;/div&gt;</span></span><br/><span class="line"><span class="string">    &lt;/body&gt;</span></span><br/><span class="line"><span class="string">&lt;/html&gt;</span></span><br/><span class="line"><span class="string">'''</span></span><br/><span class="line"/><br/><span class="line">selector = fromstring(h)</span><br/><span class="line">useless_list = selector.xpath(<span class="string">'//p[@class="con"]'</span>)</span><br/><span class="line"><span class="keyword">for</span> useless <span class="keyword">in</span> useless_list:</span><br/><span class="line">    useless.drop_tag()</span><br/><span class="line"/><br/><span class="line">print(unescape(etree.tostring(selector).decode()))</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2020-01-04-16-14-38.png" alt=""/></p>
+<p>成功达到了我们想要的目的。</p>
+<p>GNE 已经更新了版本，修复了这个 bug。使用 GNE 的同学请升级到0.1.5以上版本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">pip install --upgrade gne</span><br/></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

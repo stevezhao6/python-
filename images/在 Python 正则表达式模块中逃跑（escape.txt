@@ -1,0 +1,36 @@
+在<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在编程语言中，有常见的符号被赋予了特殊的意义，例如小数点<code>.</code>，在正则表达式里面表示任意一个非换行符的字符；小于号<code>&lt;</code>在 html 中表示标签。</p>
+<p>但有时候，我们只想让这些符号表示它本来的意思，不想让它的特殊意义表露出来，应该怎么办？</p>
+<a id="more"/>
+<p>我们知道，在正则表达式中可以使用反斜杠来让一个特殊符号变成普通符号，例如<code>\.</code>表示普通的小数点，<code>\$</code>表示普通的美元符号。</p>
+<p>现在我有一个列表<code>keywords_list</code>，里面是100个字符串，我想判断是否有任意一个字符串在某个给定的句子中。如果用 for 循环一个一个去检查，效率非常低。于是可以考虑使用正则表达式：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br/><span class="line"/><br/><span class="line">pattern = re.compile(<span class="string">'|'</span>.join(keywords_list))</span><br/><span class="line"/><br/><span class="line"><span class="keyword">if</span> pattern.search(<span class="string">'目标句子'</span>):</span><br/><span class="line">    print(<span class="string">'目标句子中包含某个关键词'</span>)</span><br/></pre></td></tr></table></figure>
+<p>但假设 <code>keywords_list</code>列表中有如下的字符串：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">keywords_list = [<span class="string">'4.5'</span>, <span class="string">'+{d'</span>, <span class="string">'***'</span>]</span><br/></pre></td></tr></table></figure>
+<p>那么我们使用正则表达式就会导致报错，如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-02-22-11-20.png" alt=""/></p>
+<p>这是因为这些字符串里面存在特殊的符号，这些符号在正则表达式里面有特殊的意义，有使用的规范，不能随意使用。</p>
+<p>但是，<code>keywords_list</code>里面有各种各样的特殊符号，难道要一个一个取出来，逐一<code>x.replace('+', '\+').replace('.', '\.').replace('*', '\*')...</code>?</p>
+<p>当然不用，Python 的正则表达式模块已经帮你想好了解决办法，使用<code>re.escape</code>就能自动处理所有的特殊符号了！</p>
+<p>它的用法如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> re</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>keywords_list = [<span class="string">'4.5'</span>, <span class="string">'+{d'</span>, <span class="string">'***'</span>]</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>pattern_str = <span class="string">'|'</span>.join(keywords_list)</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>safe_pattern_str = re.escape(pattern_str)</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(safe_pattern_str)</span><br/><span class="line"><span class="number">4</span>\<span class="number">.5</span>\|\+\{d\|\*\*\*</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.compile(safe_pattern_str)</span><br/><span class="line">re.compile(<span class="string">'4\\.5\\|\\+\\{d\\|\\*\\*\\*'</span>)</span><br/><span class="line">&gt;&gt;&gt;</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-02-22-16-08.png" alt=""/></p>
+<p>解决问题。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

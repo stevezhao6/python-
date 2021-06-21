@@ -1,0 +1,44 @@
+一<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>一根不起眼的短横线，在 Golang 和 Python 中，都能够让你不输出某些不想要的字符。</p>
+<a id="more"/>
+<h2 id="不输出日期时间前面的0"><a href="#不输出日期时间前面的0" class="headerlink" title="不输出日期时间前面的0"/>不输出日期时间前面的0</h2><p>我们在使用 Python 输出时间日期的时候，一般格式是这样的：<code>YYYY-mm-dd  :MM:SS</code>，例如：<code>2021-03-22 09:10:12</code>。可以看到<code>03</code>和<code>09</code>前面都有一个0。这样做的好处，是可以让日期时间保持相同的长度，于是就可以通过字符串的方式比较大小。</p>
+<p>但有时候，因为某些原因，你可能确实不想补0，你就想输出<code>2021-3-22 9:10:12</code>这种格式的时间。</p>
+<p>但我们知道，在 Python 里面把日期时间格式化输出，代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime</span><br/><span class="line"/><br/><span class="line">now = datetime.datetime.now()</span><br/><span class="line">dt_str = now.strftime(<span class="string">'%Y-%m-%d %H:%M:%S'</span>)</span><br/></pre></td></tr></table></figure>
+<p>在这个格式化符号里面，可以看到我们本身就使用的是一个字符，月份就是<code>%m</code>，难道还有另外一个符号用来表示不补0的日期？</p>
+<p>实际上，不补0并不需要另外一个符号来表示，我们只需要在<code>%</code>和<code>m</code>之间加上一根短横线就可以了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime</span><br/><span class="line"/><br/><span class="line">now = datetime.datetime.now()</span><br/><span class="line">dt_str = now.strftime(<span class="string">'%Y-%-m-%-d %-H:%-M:%-S'</span>)</span><br/><span class="line">print(dt_str)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2021-03-22-21-06-08.png" alt=""/></p>
+<h2 id="Golang-结构体与-JSON-的互相转换"><a href="#Golang-结构体与-JSON-的互相转换" class="headerlink" title="Golang 结构体与 JSON 的互相转换"/>Golang 结构体与 JSON 的互相转换</h2><p>在使用 Golang 的时候，我们有时候需要在结构体和 JSON 字符串之间互相转换。在转换的工程中，可能会发现有些字段是多余的。我们不想让 JSON中的某些字段转到结构体里面，或者不想让结构体里面的某些字段转到 JSON 中去。</p>
+<p>对于从 JSON 转到结构体，要忽略字段非常简单，例如有如下一个 JSON 字符串：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">{<span class="string">"name"</span>: <span class="string">"kingname"</span>, <span class="string">"salary"</span>: <span class="number">999999999</span>, <span class="string">"address"</span>: <span class="string">"上海"</span>, <span class="string">"handsome"</span>: true}</span><br/></pre></td></tr></table></figure>
+<p>在转成结构体的时候，我不想要<code>handsome</code>这个字段，于是可以这样写代码：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/><span class="line">20</span><br/><span class="line">21</span><br/><span class="line">22</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br/><span class="line"/><br/><span class="line"><span class="keyword">import</span> (</span><br/><span class="line">	<span class="string">"encoding/json"</span></span><br/><span class="line">	<span class="string">"fmt"</span></span><br/><span class="line">)</span><br/><span class="line"/><br/><span class="line"><span class="keyword">type</span> Info <span class="keyword">struct</span> {</span><br/><span class="line">	Name    <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br/><span class="line">	Salary  <span class="keyword">int64</span>  <span class="string">`json:"salary"`</span></span><br/><span class="line">	Address <span class="keyword">string</span> <span class="string">`json:"address"`</span></span><br/><span class="line">}</span><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br/><span class="line">	jsonstr := <span class="string">`{"name": "kingname", "salary": 999999999, "address": "上海", "handsome": true}`</span></span><br/><span class="line">	<span class="keyword">var</span> info Info</span><br/><span class="line">	err := json.Unmarshal([]<span class="keyword">byte</span>(jsonstr), &amp;info)</span><br/><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> {</span><br/><span class="line">        <span class="built_in">panic</span>(err)</span><br/><span class="line">    }</span><br/><span class="line">	fmt.Println(info)</span><br/><span class="line">}</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2021-03-22-20-44-56.png" alt=""/></p>
+<p>但问题是，如果现在给你一个结构体，但是转成 JSON 的时候不想要其中一个字段，应该怎么操作？可能有人会以为，在定义结果体的时候，不要加上<code>json:"xxx"</code>就可以了。但实际执行的效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2021-03-22-20-49-42.png" alt=""/></p>
+<p>Golang 会直接使用这个字段在结构体中的名字来转成 JSON。</p>
+<p>如果不想要这个字段，实际上有一个非常简单的办法，就是在定义结构体的时候，加上<code>json:"-"</code>，例如：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Info <span class="keyword">struct</span> {</span><br/><span class="line">	Name     <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br/><span class="line">	Salary   <span class="keyword">int64</span>  <span class="string">`json:"salary"`</span></span><br/><span class="line">	Address  <span class="keyword">string</span> <span class="string">`json:"address"`</span></span><br/><span class="line">	Handsome <span class="keyword">bool</span>   <span class="string">`json:"-"`</span></span><br/><span class="line">}</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2021-03-22-20-52-43.png" alt=""/></p>
+<p>通过指定这个横线，就能忽略这个字段了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

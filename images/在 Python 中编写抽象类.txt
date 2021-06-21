@@ -1,0 +1,33 @@
+在<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在极客时间某设计模式相关的课程中，某老师说 Python 不支持抽象类和接口。</p>
+<p>但实际上，Python 支持抽象类。</p>
+<a id="more"/>
+<p>Python 自带的<code>abc</code>模块用于实现抽象类相关的定义和操作。</p>
+<p>我们通过一个简单的例子来说明，如何在 Python 中实现抽象类：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod</span><br/><span class="line"/><br/><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span><span class="params">(ABC)</span>:</span></span><br/><span class="line"><span class="meta">    @abstractmethod</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">walk</span><span class="params">(self)</span>:</span></span><br/><span class="line">        <span class="keyword">pass</span></span><br/><span class="line">    </span><br/><span class="line"><span class="meta">    @abstractmethod</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">eat</span><span class="params">(self)</span>:</span></span><br/><span class="line">        <span class="keyword">pass</span></span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">dance</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'我正在跳舞'</span>)</span><br/></pre></td></tr></table></figure>
+<p>从<code>abc</code>模块导入<code>ABC</code>类，和<code>abstractmethod</code>抽象方法装饰器。基于<code>ABC</code>类可以实现一个抽象类。通过<code>@abstractmethod</code>装饰一个方法，让它成为一个抽象方法。抽象方法在子类中必需被实现。</p>
+<p>抽象类不能被实例化，所以我们实例化一下，可以看到这里报错了，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-26-19-43-11.png" alt=""/></p>
+<p>我们再看一下，如果继承抽象类，但是没有实现其中的某个抽象方法，也会导致报错。如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-26-19-47-41.png" alt=""/></p>
+<p>当我们把所有抽象方法都实现了以后，子类就能够正常初始化了，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-26-19-49-23.png" alt=""/></p>
+<p>抽象类<code>People</code>中的<code>dance</code>不是抽象方法，所以子类不需要覆盖。</p>
+<p>抽象类是软件开发中一个非常重要的概念，通过定义抽象类，我们可以约定子类必需实现的方法。当我们一个类有几十上百个方法时，用抽象方法来防止子类漏掉某些方法是非常方便的做法。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

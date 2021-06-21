@@ -1,0 +1,55 @@
+如<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>请大家猜一猜下面这段代码的运行效果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br/><span class="line"><span class="keyword">import</span> time</span><br/><span class="line"/><br/><span class="line">people = [<span class="string">'kingname'</span>, <span class="string">'王小一'</span>, <span class="string">'李小二'</span>, <span class="string">'张小三'</span>, <span class="string">'刘小四'</span>, <span class="string">'卢小五'</span>, <span class="string">'马小六'</span>, <span class="string">'周小七'</span>, <span class="string">'丁小八'</span>, <span class="string">'朱小九'</span>]</span><br/><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">11</span>):</span><br/><span class="line">    lucky_guy = random.choice(people)</span><br/><span class="line">    print(<span class="string">f'第<span class="subst">{i}</span>次抽奖，中奖用户：<span class="subst">{lucky_guy}</span>'</span>)</span><br/><span class="line">    time.sleep(<span class="number">1</span>)</span><br/></pre></td></tr></table></figure>
+<p>你是不是以为这段代码运行以后，结果如下图所示？</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-21-21-50-47.png" alt=""/></p>
+<p>但实际上，我可以让输出结果根据我的意愿随意变动，例如像下面这个 gif ，所有输出结果都是我：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/fakerandom.gif" alt=""/></p>
+<p>你可以先不要往下看，放下手机，自己写一下代码，试一试 如何才能实现 gif 中的效果。</p>
+<a id="more"/>
+<p>下面来为大家解密。</p>
+<p>要实现这个效果，只需要两个知识点：</p>
+<ol>
+<li>Python自带模块是可以被覆盖的</li>
+<li>Python 的 import 在同一个运行时只会导入一次</li>
+</ol>
+<p>首先来看第一个知识点。Python 的自带模块是可以被覆盖的，所以我们先来定义一个函数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">choice</span><span class="params">(option)</span>:</span></span><br/><span class="line">    <span class="keyword">return</span> <span class="string">'kingname'</span></span><br/></pre></td></tr></table></figure>
+<p>接下来，使用这个函数覆盖<code>random.choice</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br/><span class="line">random.choice = choice</span><br/></pre></td></tr></table></figure>
+<p>现在，无论给<code>random.choice</code>传入什么参数，它始终都会返回<code>kingname</code>，运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-21-21-58-38.png" alt=""/></p>
+<p>这个时候，你可能会说，那别人写代码的时候，又重新<code>import random</code>怎么办呢？<code>random.choice</code>不是又被改回去了吗？</p>
+<p>实际上并不会，因为Python 的包导入机制决定了，在每个运行时内部，每个包只有第一次导入的时候有效，所以只要还在当前运行时，那么后续的所有<code>import random</code>都是无效的。</p>
+<p>所以，即使重新导入了 random 模块，<code>random.choice</code>依然是你修改以后的代码。所以当你再次执行的时候，会发现返回的还是你想要的数据，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-21-22-02-38.png" alt=""/></p>
+<p>可能有人会说这样容易被识破啊，别人只要先随便写一些测试数据，运行一次<code>random.choice([123, 456])</code>，发现返回的竟然是<code>kingname</code>，这不就露馅了吗？</p>
+<p>实际上完全不用担心，我们可以这样操作：</p>
+<ol>
+<li>如果备选列表里面不包含<code>kingname</code>，那么就使用原生的 <code>random.choice</code></li>
+<li>如果备选列表里面包含<code>kingname</code>，那么就以60%的概率返回<code>kingname</code></li>
+</ol>
+<p>要实现这样的功能，我们可以这样写代码：</p>
+<p>首先重启当前 Jupyter 内核，让 random 恢复成默认的，然后编码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br/><span class="line"/><br/><span class="line">origin_choice = random.choice</span><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">choice</span><span class="params">(option)</span>:</span></span><br/><span class="line">    <span class="keyword">if</span> <span class="string">'kingname'</span> <span class="keyword">not</span> <span class="keyword">in</span> option <span class="keyword">or</span> random.randint(<span class="number">1</span>, <span class="number">10</span>) &gt; <span class="number">6</span>:</span><br/><span class="line">        <span class="keyword">return</span> origin_choice(option)</span><br/><span class="line">    <span class="keyword">return</span> <span class="string">'kingname'</span></span><br/><span class="line"/><br/><span class="line">random.choice = choice</span><br/></pre></td></tr></table></figure>
+<p>这样替换以后，当有<code>kingname</code>在备选列表中时，<code>kingname</code>被有60%的概率被选中，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-21-22-13-06.png" alt=""/></p>
+<p>当<code>kingname</code>不在备选列表中时，一切正常，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-21-22-13-51.png" alt=""/></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

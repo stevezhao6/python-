@@ -1,0 +1,34 @@
+更<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>原来我们在 Python 中写日志，使用的是 Python 自带的 logging 模块，要实现既在终端输出，又能写文件，并且日志文件还能 rotate ，代码需要十多行：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br/><span class="line"><span class="keyword">from</span> logging.handlers <span class="keyword">import</span> RotatingFileHandler</span><br/><span class="line"/><br/><span class="line">os.makedirs(<span class="string">'Logs'</span>, exists_ok=<span class="literal">True</span>)</span><br/><span class="line">logger = logging.getLogger(<span class="string">'Robot'</span>)</span><br/><span class="line">handler = logging.StreamHandler()</span><br/><span class="line">handler.setLevel(logging.DEBUG)</span><br/><span class="line">file_handler = RotatingFileHandler(os.path.join(<span class="string">'Logs'</span>, <span class="string">'robot.log'</span>),</span><br/><span class="line">maxBytes=<span class="number">5</span> * <span class="number">1024</span> * <span class="number">1024</span>,</span><br/><span class="line">backupCount=<span class="number">10</span>,</span><br/><span class="line">encoding=<span class="string">'utf-8'</span>)</span><br/><span class="line">formatter = logging.Formatter(<span class="string">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span>)</span><br/><span class="line">handler.setFormatter(formatter)</span><br/><span class="line">file_handler.setFormatter(formatter)</span><br/><span class="line">logger.addHandler(handler)</span><br/><span class="line">logger.addHandler(file_handler)</span><br/><span class="line">logger.setLevel(logging.DEBUG)</span><br/><span class="line"/><br/><span class="line">logger.info(<span class="string">'终于可以写日志了...'</span>)</span><br/></pre></td></tr></table></figure>
+<p>那有没有什么简单好用，<code>for human</code>的写日志方案呢？</p>
+<a id="more"/>
+<p>当然有，那就是使用<a href="https://github.com/Delgan/loguru" target="_blank" rel="noopener">loguru</a>这个模块。</p>
+<p>它有多好用呢？我们用一段代码来演示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> loguru <span class="keyword">import</span> logger</span><br/><span class="line">logger.add(<span class="string">'logs/z_project.log'</span>,</span><br/><span class="line">           level=<span class="string">'DEBUG'</span>,</span><br/><span class="line">           format=<span class="string">'{time:YYYY-MM-DD  :mm:ss} - {level} - {file} - {line} - {message}'</span>,</span><br/><span class="line">           rotation=<span class="string">"10 MB"</span>)</span><br/><span class="line">logger.info(<span class="string">'可以写日志了'</span>)</span><br/></pre></td></tr></table></figure>
+<p>不需要提前创建文件夹。不需要设置奇奇怪怪的<code>handler</code>。</p>
+<p>甚至你可以直接把它当做装饰器使用，当一个函数报错的时候，自动记录日志：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> loguru <span class="keyword">import</span> logger</span><br/><span class="line"/><br/><span class="line"/><br/><span class="line"><span class="meta">@logger.catch</span></span><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br/><span class="line">    <span class="string">'a'</span> + <span class="number">1</span></span><br/></pre></td></tr></table></figure>
+<p>函数报错时，自动记录报错信息到日志中。</p>
+<p>他记录的报错信息有多准确呢？我们来看这个图：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-09-29-22-03-54.png" alt=""/></p>
+<p>每个变量的值都给你标出来了。</p>
+<p>使用 loguru 也只需要定义一次格式。只需要在入口文件定义好格式，在同一个项目中的其他文件中，直接</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> loguru <span class="keyword">import</span> logger</span><br/><span class="line">logger.info(<span class="string">'可以用了'</span>)</span><br/></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

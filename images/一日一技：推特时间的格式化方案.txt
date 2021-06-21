@@ -1,0 +1,41 @@
+一<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在使用推特开放API获取推文的时候，会发现推文的发布时间是下面这样的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line">{</span><br/><span class="line">    ...</span><br/><span class="line">    <span class="string">"created_at"</span>: <span class="string">"Tue Dec 24 10:51:15 +0000 2019"</span>,</span><br/><span class="line">    ...</span><br/><span class="line">}</span><br/></pre></td></tr></table></figure>
+<p>现在我想把它转换为<code>2019-12-24 18:51:15</code>的形式，应该如何操作呢？</p>
+<a id="more"/>
+<p>可能有同学会按照下面这个逻辑来处理：</p>
+<ol>
+<li>首先，使用空格把这个时间字符串切分开变成<code>['Tue', 'Dec', '24', '10:51:15', '+0000', '2019']</code></li>
+<li>第0项是星期，不需要，直接丢弃</li>
+<li>第1项是月份，通过一个英文月份简称到月份数字的字典，把<code>Dec</code>映射为<code>12</code></li>
+<li>第2项是日期，不做修改</li>
+<li>第3项是时分秒，不做修改</li>
+<li>第4项是时区，说明这个时间是采用的0时区，比北京时间晚8小时</li>
+<li>第5项是年份，不做修改</li>
+<li>把修改过的第1项、第2项、第3项、第5项调整顺序，拼接成一个符合要求的时间：<code>2019-12-24 10:51:15</code>。把使用<code>datetime.datetime.strptime</code>转成<code>datetime.datetime</code>对象。</li>
+<li>把这个<code>datetime.datetime</code>对象加上<code>datetime.timedelta(hours=8)</code></li>
+<li>使用<code>strftime</code>方法再把<code>datetime.datetime</code>对象转回字符串</li>
+</ol>
+<p>整个过程看起来非常麻烦。</p>
+<p>实际上，我们有更简单的办法来处理。<code>Tue Dec 24 10:51:15 +0000 2019</code>对应的时间格式为<code>%a %b %d %H:%M:%S %z %Y</code>；对于一个<code>datetime.datetime</code>对象，我们可以调用它的<code>astimezone</code>方法把时区移除，移除以后就会变成当地时间。</p>
+<p>完整代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>dt = <span class="string">'Wed Dec 25 09:09:25 +0000 2019'</span></span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>dt_obj = datetime.datetime.strptime(dt, <span class="string">'%a %b %d %H:%M:%S %z %Y'</span>)</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>dt_obj.astimezone(tz=<span class="literal">None</span>).strftime(<span class="string">'%Y-%m-%d %H:%M:%S'</span>)</span><br/><span class="line"><span class="string">'2019-12-25 17:09:25'</span></span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-25-21-38-09.png" alt=""/></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

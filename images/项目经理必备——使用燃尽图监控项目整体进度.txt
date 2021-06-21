@@ -1,0 +1,99 @@
+项<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在<a href="https://www.kingname.info/2018/10/17/use-gantt-enhanced/">《跳出任务管理的泥沼，拥抱甘特图的怀抱》</a>一文中，我谈到了使用甘特图来规划任务。甘特图更多的关注每一个任务的进度上。那么如果我希望了解项目整体的进度，应该如何选择呢？此时就需要引入另一个简单又强大的工具：燃尽图（Burn down chart）。</p>
+<a id="more"/>
+<h2 id="什么是燃尽图"><a href="#什么是燃尽图" class="headerlink" title="什么是燃尽图"/>什么是燃尽图</h2><p>假设项目X有5个任务，我们在预估这些任务的时候，时间安排如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目名称</th>
+<th>预计用时（小时）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>任务2</td>
+<td>6</td>
+</tr>
+<tr>
+<td>任务3</td>
+<td>7</td>
+</tr>
+<tr>
+<td>任务4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>任务5</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>这个任务预计需要25小时完成，考虑到可能需要处理各种突发事件留出机动时间，因此，我需要在7天内完成这个项目，项目时间定为：2018-12-01到2018-12-07。</p>
+<p>在非常理想的情况下，平均分配工作时间，到2018-12-07这一个公作日结束时刚刚好完成任务。此时的时间消耗，绘制为折线图如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-25-21.png" alt=""/></p>
+<p>纵坐标为任务剩余时间，横坐标为日期，</p>
+<p>然而，在实际情况中，可能有些任务能提前完成，有些任务时间又需要延迟，实际上的剩余时间和日期的折线图可能如下图橙色曲线所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-28-33.png" alt=""/></p>
+<p>这就是<code>燃尽图</code>。非常简单又非常直观。</p>
+<p>从这一幅燃尽图中，我们可以看到：在2018-12-01到2018-12-05时，我们的开发进度是领先于计划的，看起来任务应该能够提前完成，橙色曲线斜率负得越多，越陡，表示实际开发进度领先得越多。然而从2018-12-03开始，开发速度下降，到2018-12-06时进度和预期时间重合。到2018-12-07，开发进度落后于预期，任务无法如期完成。</p>
+<p>我们再来看几个例子：</p>
+<ul>
+<li>按时完成任务：</li>
+</ul>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-34-27.png" alt="按时完成任务"/></p>
+<ul>
+<li>提前完成任务</li>
+</ul>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-37-05.png" alt="提前完成任务"/></p>
+<ul>
+<li>没有完成任务</li>
+</ul>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-38-53.png" alt="没有完成任务"/></p>
+<ul>
+<li>前期落后进度，后期加速赶上</li>
+</ul>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-40-23.png" alt="前期落后进度，后期加速赶上"/></p>
+<h2 id="如何绘制燃尽图"><a href="#如何绘制燃尽图" class="headerlink" title="如何绘制燃尽图"/>如何绘制燃尽图</h2><p>燃尽图是敏捷开发中的一个概念，不少敏捷开发的相关的项目管理系统中都能够生成燃尽图。由于燃尽图非常简单，使用Excel自带的画图功能，稍稍费一些功夫也能够正常生成。</p>
+<p>本着使用Python提高日常办公效率的考虑，我使用macOS自带的numbers表格工具 + Python来生成燃尽图。当然你也可以使用Excel来完成。其中表格用于记录任务的剩余时间，Python用于格式化任务时间并生成燃尽图。</p>
+<h3 id="表格的填写规范"><a href="#表格的填写规范" class="headerlink" title="表格的填写规范"/>表格的填写规范</h3><p>其中表格如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-47-16.png" alt=""/></p>
+<p>其中，表格的第一行是任务名称，第一列是日期。表格中间填写的数字，表示任务的剩余时间。表格的填写规则如下：</p>
+<ul>
+<li>某一格留空，表示这一天没有做这个任务。</li>
+<li>某一格为0，表示任务完成。</li>
+<li>某一格为大于0的数字，表示任务剩余的时间。</li>
+<li>不需要提前填写没有发生的日期。例如任务安排为2018-12-01到2018-12-07，今天是2018-12-06，那么不需要提前填写2018-12-07这一行。</li>
+<li>请按照日期正序排序，不要打乱日期。</li>
+</ul>
+<h3 id="分析程序的使用说明"><a href="#分析程序的使用说明" class="headerlink" title="分析程序的使用说明"/>分析程序的使用说明</h3><p>填写好表格以后，把它保存为excel的xlsx文件。假设路径为：<code>/Users/kingname/Desktop/test.xlsx</code>（或者Windows系统保存在：<code>D:\work\test.xlsx</code>）。</p>
+<p>使用Anaconda中的Jupyter打开分析程序的ipynb文件，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-58-02.png" alt=""/></p>
+<p>只需要修改这三行数据中，单引号里面的内容，其余内容不需要修改。</p>
+<p>修改完成以后，点击工具栏的<code>Kernel-Restart &amp; Run All</code>，如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-17-59-36.png" alt=""/></p>
+<p>静静等待2秒钟，燃尽图将会出现在页面的最下方。如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2018-12-23-18-03-04.png" alt=""/></p>
+<h2 id="获取Excel模板和源代码"><a href="#获取Excel模板和源代码" class="headerlink" title="获取Excel模板和源代码"/>获取Excel模板和源代码</h2><p>Excel与ipynb文件地址：<a href="https://github.com/kingname/Automatic/tree/master/burndown_chart" target="_blank" rel="noopener">https://github.com/kingname/Automatic/tree/master/burndown_chart</a></p>
+<p>使用Jupyter打开ipynb文件可以看到分析程序。</p>
+<h2 id="附言"><a href="#附言" class="headerlink" title="附言"/>附言</h2><p>如果你不知道Jupyter是什么，或者你没有任何编程基础，但是想尝试一些燃尽图，那么你可以添加我的公众号联系我，我会告诉你如何使用Jupyter。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

@@ -1,0 +1,53 @@
+产<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>产品经理中午没有赶上食堂的午饭，于是纠集了一批人一起点外卖。然而正当她要下单时，老板找她有开会，于是她让开发小哥随便帮忙点一份。</p>
+<p>产品经理开完会回来以后，发现还剩三份外卖没有人拿，分别是鲱鱼汤、螺蛳粉和大肠刺身。此时开发小哥碰巧不在，产品经理一时不知道哪一份才是自己的。</p>
+<a id="more"/>
+<p>产品经理想随便选一份，于是选了鲱鱼汤。正当她抱起鲱鱼汤准备走时，开发小哥风风火火跑过来，拿着螺蛳粉又跑了，产品经理甚至来不及询问哪一个才是自己的。</p>
+<p>产品经理一想，虽然自己是文科生，但是现在只剩两个外卖，选哪一个都是二分之一的概率。所以直接拿走了鲱鱼汤。</p>
+<p>3分钟以后，研究员小哥咆哮一声：谁拿走了我的鲱鱼汤？</p>
+<p>产品经理赶紧喝完了汤，若无其事地把鲱鱼汤的包装扔进了垃圾桶。</p>
+<p>躲在暗处的开发小哥注视着刚才发生的一切，用中指推了推眼镜，镜片上一道光芒闪过，转身走向了厕所。</p>
+<p>其实，开发小哥在不久之前才教会了产品经理使用 Python，如果产品经理写几行代码验证一下概率，就会发现事情并不简单。</p>
+<p>我们假设：</p>
+<ol>
+<li>这三个外卖里面，有且只有一份是产品经理的</li>
+<li>开发小哥跑过来，不会抢产品经理手上拿着的外卖</li>
+<li>开发小哥拿走的，一定不是属于产品经理的外卖</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> random</span><br/><span class="line"/><br/><span class="line">options = {<span class="string">'鲱鱼汤'</span>, <span class="string">'螺蛳粉'</span>, <span class="string">'大肠刺身'</span>}</span><br/><span class="line">pm = random.choice(list(options))  <span class="comment"># 开发小哥给产品经理点的外卖</span></span><br/><span class="line">right = <span class="number">0</span></span><br/><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">100000</span>):</span><br/><span class="line">    guess = random.choice(list(options)) <span class="comment"># 产品经理随机选的外卖</span></span><br/><span class="line">    </span><br/><span class="line">    <span class="comment"># 开发小哥会从剩下的两个外卖中，拿走不属于产品经理的一个</span></span><br/><span class="line">    exclude_options = options - {guess, pm}  </span><br/><span class="line">    exclude = random.choice(list(exclude_options))</span><br/><span class="line"/><br/><span class="line">    <span class="comment"># 如果产品经理此时更换了选项</span></span><br/><span class="line">    new_guess_option = options - {exclude, guess}</span><br/><span class="line">    new_guess = random.choice(list(new_guess_option))</span><br/><span class="line">    <span class="keyword">if</span> new_guess == pm:</span><br/><span class="line">        right += <span class="number">1</span></span><br/><span class="line">print(right / <span class="number">100000</span>)</span><br/></pre></td></tr></table></figure>
+<p>运行结果如下：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-03-15-06-51.png" alt=""/></p>
+<p>如果产品经理在看到开发小哥拿走了外卖以后，更换自己的选择，那么选对的概率是2/3.如果不更换自己的选择，选中的概率为1/3.</p>
+<p>相信很多人都会跟产品经理一样，觉得选对的概率是1/2.对代码的计算结果感到惊讶，这非常违反直觉。</p>
+<p>其实，整个问题的关键在于，开发小哥不是随机从剩下的两个外卖中拿走一个。开发小哥拿走的一定是不属于产品经理的外卖。</p>
+<p>相信很多人不想看概率公式，所以我们今天不用概率来解释。我另外举一个例子：</p>
+<p>我现在有三个盒子，其中一个盒子里面放手机。但你不知道手机在哪个盒子里面。</p>
+<ol>
+<li>你选一个盒子放在你的包里面，另外两个盒子放在我的包里面，我问你换不换包，你会换吗？我包里面有两个盒子，所以我的<code>包</code>里面有手机的概率是2/3，你显然要换。</li>
+<li>你选一个盒子放在你的包里面，另外两个盒子放在我的包里面，然后我从我包里面丢掉一个空盒子，再问你换不换包。此时，我丢掉空盒子并不会影响我包里面有手机的概率为2/3.你显然要换。</li>
+<li>现在去掉<code>包</code>这个可有可无的东西——你选一个盒子，我从剩下两个盒子里面扔掉一个空盒子，问你要不要更换选择？你说换不换？</li>
+</ol>
+<p>最后我们再从概率上来定量解释一下这个问题。如果产品经理始终选择要更换，那么：</p>
+<ol>
+<li>第一次就选中了她的外卖，此时更换以后，选对的概率为1/3 * 0</li>
+<li>第一次选中了别人的外卖1，开发小哥必定拿走别人的外卖2，此时产品经理选对的概率为：1/3 * 1 = 1/3</li>
+<li>第一次选中了别人的外卖2，开发小哥必定拿走别人的外卖1，此时产品经理选对的概率为：1/3 * 1 = 1/3</li>
+</ol>
+<p>所以如果选择要换，产品经理选对的概率为<code>0 + 1/3 + 1/3 = 2/3</code></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

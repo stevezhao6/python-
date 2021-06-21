@@ -1,0 +1,31 @@
+如<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>说到安装 Python 的第三方库，会 Python 的同学都知道，在终端使用<code>pip install xxx</code>即可。</p>
+<p>那么如果我想在代码里面安装第三方库怎么办呢？可能有人想到使用 <code>os</code> 模块：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br/><span class="line">package_name = <span class="string">'requests'</span></span><br/><span class="line">os.system(<span class="string">f'pip install <span class="subst">{package_name}</span>'</span>)</span><br/></pre></td></tr></table></figure>
+<p>这种方法确实可行，并且即使你在虚拟环境中使用这种方式安装，也确实不会安装到系统的 Python 环境中。</p>
+<a id="more"/>
+<p>但是这种方式总感觉有点奇怪。而且如果这个<code>package_name</code>字符串经过精心构造，可以执行任意系统命令，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br/><span class="line">package_name = <span class="string">'requests &amp;&amp; rm -rf *'</span></span><br/><span class="line">os.system(<span class="string">f'pip install <span class="subst">{package_name}</span>'</span>)</span><br/></pre></td></tr></table></figure>
+<p>为了防止这种情况发生，我们可以直接调用<code>pip</code>这个 Python 包：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pip._internal <span class="keyword">import</span> main</span><br/><span class="line"/><br/><span class="line">main.main([<span class="string">'install'</span>, <span class="string">'第三方库名'</span>])</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-10-29-21-52-23.png" alt=""/></p>
+<p>命令行下面的参数都可以通过转换为列表的形式执行，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pip._internal <span class="keyword">import</span> main</span><br/><span class="line"/><br/><span class="line">main.main([<span class="string">'install'</span>, <span class="string">'-r'</span>, <span class="string">'requirements.txt'</span>])</span><br/></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

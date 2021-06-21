@@ -1,0 +1,43 @@
+一<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>现在我有10亿条微博正文，并从同事手上拿到了15000条需要过滤的垃圾信息正则表达式，只要微博正文符合任何一条正则表达式，就删除这条微博。</p>
+<a id="more"/>
+<p>正则表达式的格式为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/><span class="line">20</span><br/><span class="line">21</span><br/></pre></td><td class="code"><pre><span class="line">^你成功领取</span><br/><span class="line">|^感谢您的积</span><br/><span class="line">|^在第\d+次抽奖.</span><br/><span class="line">|^只有帮主才</span><br/><span class="line">|^目标有相应</span><br/><span class="line">|^宝宝<span class="comment">#G.</span></span><br/><span class="line">|^提交失败，</span><br/><span class="line">|^您已领取过</span><br/><span class="line">|^破军争夺战</span><br/><span class="line">|^首席大弟子</span><br/><span class="line">|数第\d+个丫鬟</span><br/><span class="line">|你的店铺</span><br/><span class="line">|恭喜.*?投中了</span><br/><span class="line">|&lt;web</span><br/><span class="line">|你将该物品拆解成</span><br/><span class="line">|^你身上没有</span><br/><span class="line">|欢迎参加微博抽奖</span><br/><span class="line">|蔡徐坤</span><br/><span class="line">|王一博</span><br/><span class="line">|朱一龙</span><br/><span class="line">...</span><br/></pre></td></tr></table></figure>
+<p>存放在一个名为<code>trash.txt</code>的文本文件中，每个正则表达式一行。</p>
+<p>一般情况下，我只需要使用如下几行代码就能实现这个功能：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> open(<span class="string">'trash.txt'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:</span><br/><span class="line">    lines = [x.strip() <span class="keyword">for</span> x <span class="keyword">in</span> f]</span><br/><span class="line">    pattern = re.compile(<span class="string">''</span>.join(lines))</span><br/><span class="line"/><br/><span class="line"><span class="keyword">for</span> weibo <span class="keyword">in</span> weibo_list:</span><br/><span class="line">    <span class="keyword">if</span> pattern.search(weibo):</span><br/><span class="line">        print(<span class="string">'垃圾信息，过滤！'</span>)</span><br/></pre></td></tr></table></figure>
+<p>但是当我的代码运行到<code>re.compile</code>这一行时，报错了，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-30-12-56-46.png" alt=""/></p>
+<p>并且，即使你在 Google 上面搜索：<code>re.error: multiple repeat at position</code>，截至2019年12月30日，你能找到的都是对这个报错的讨论，但没有一个讨论能解决本文描述的问题。</p>
+<p>那我们自食其力，来试着解决一下这个问题。它报错报的是<code>position 167</code>，那么我们来看看第167个字符有什么问题。在 PyCharm 中，可以在右下角查看你选中了多少个字符，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-30-12-59-22.png" alt=""/></p>
+<p>从截图中可以看到，第167个字符所在的这一行正则表达式为：<code>|张三丰.*?张翠山.*?张无忌</code>，但是我完全看不出这一行正则表达式有什么问题。</p>
+<p>由于报错了，那么肯定至少有一行正则表达式有问题，我们假设有问题的正则表达式有且只有一行。现在我们有15000行正则表达式，如何找出有问题的这一行呢？</p>
+<p>这个时候，我们就可以使用二分查找来解决这个问题，$log_{2}15000=13.8$，我们最多查找14次就能找到有问题的这一行正则表达式。</p>
+<p>由于正则表达式一共有15000行，我们就先看0-7500行在编译时是否会报错，如果报错，在看<code>0-3750</code>行是否报错，如果不报错，在看<code>3750-7500</code>行是否报错……如此分割下去，直到找到报错的这一行正则表达式。</p>
+<p>二分查找的代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/><span class="line">20</span><br/><span class="line">21</span><br/><span class="line">22</span><br/><span class="line">23</span><br/><span class="line">24</span><br/><span class="line">25</span><br/><span class="line">26</span><br/><span class="line">27</span><br/><span class="line">28</span><br/><span class="line">29</span><br/><span class="line">30</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br/><span class="line"/><br/><span class="line"><span class="keyword">with</span> open(<span class="string">'trash.txt'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:</span><br/><span class="line">    lines = [x.strip() <span class="keyword">for</span> x <span class="keyword">in</span> f]</span><br/><span class="line"/><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">is_compile_success</span><span class="params">(regex)</span>:</span></span><br/><span class="line">    <span class="keyword">try</span>:</span><br/><span class="line">        re.compile(regex)</span><br/><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br/><span class="line">    <span class="keyword">except</span> Exception:</span><br/><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br/><span class="line"/><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">search</span><span class="params">(regex_list)</span>:</span></span><br/><span class="line">    <span class="keyword">if</span> len(regex_list) == <span class="number">1</span>:</span><br/><span class="line">        print(regex_list[<span class="number">0</span>])</span><br/><span class="line">        <span class="keyword">return</span></span><br/><span class="line">    mid = len(regex_list) // <span class="number">2</span></span><br/><span class="line">    part_1 = <span class="string">''</span>.join(regex_list[: mid])</span><br/><span class="line">    part_2 = <span class="string">''</span>.join(regex_list[mid: ])</span><br/><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> is_compile_success(part_1):</span><br/><span class="line">        search(regex_list[: mid])</span><br/><span class="line">        <span class="keyword">return</span></span><br/><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> is_compile_success(part_2):</span><br/><span class="line">        search(regex_list[mid:])</span><br/><span class="line">        <span class="keyword">return</span></span><br/><span class="line"/><br/><span class="line"/><br/><span class="line">search(lines)</span><br/></pre></td></tr></table></figure>
+<p>运行结果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-12-30-13-20-24.png" alt=""/></p>
+<p>原来出问题的地方在：<code>.*??</code>，这里多写了一个问号。把这一行改成<code>|赵大.*?包</code>以后，编译成功通过。</p>
+<h2 id="思考题"><a href="#思考题" class="headerlink" title="思考题"/>思考题</h2><ol>
+<li>如果要把出问题的这一行所在的行号打印出来，应该如何修改代码？</li>
+<li>如果有问题的正则表达式不止一行，应该如何修改代码，从而打印所有有问题的正则表达式？</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

@@ -1,0 +1,36 @@
+让<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们知道，读取 Python 字典时，如果某个 Key 不存在，Python 就会报错，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-30-22-42-39.png" alt=""/></p>
+<p>为了防止它报错，我们可以使用<code>.get()</code>方法：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-30-22-43-26.png" alt=""/></p>
+<p>但每次都要写<code>.get()</code>稍显麻烦。于是我们可以通过自己实现一个自定义的字典对象，来解决这个问题。</p>
+<a id="more"/>
+<p>我们自定义一个类，继承<code>dict</code>，然后实现它的<code>__missing__</code>方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">OurDict</span><span class="params">(dict)</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__missing__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br/><span class="line"/><br/><span class="line">a = OurDict({<span class="string">'a'</span>: <span class="number">1</span>, <span class="string">'b'</span>: <span class="number">2</span>})</span><br/><span class="line">print(a[<span class="string">'x'</span>])</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-30-22-46-13.png" alt=""/></p>
+<p>只要这个 Key 不存在，就会返回 <code>None</code>。</p>
+<p>在 Python 的<code>collections</code>工具模块中，有一个<code>defaultdict</code>实现了类似的事情。我们看它的使用方法。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br/><span class="line"/><br/><span class="line">a = defaultdict(str)</span><br/><span class="line">a[<span class="string">'a'</span>] = <span class="number">1</span></span><br/><span class="line">a[<span class="string">'b'</span>] = <span class="number">2</span></span><br/><span class="line">print(a)</span><br/><span class="line">print(a[<span class="string">'x'</span>])</span><br/><span class="line">print(a)</span><br/></pre></td></tr></table></figure>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-30-22-54-45.png" alt=""/></p>
+<p><code>a = defaultdict(str)</code>接收一个函数，让<code>a</code>变量成为一个<code>defaultdict</code>类型的对象，它可以像普通字典一样被赋值和读取。</p>
+<p>但是当你读取一个不存在的 key 时，它会自动生成一个默认值，并把默认值和这个 key 插入到字典中。这个默认值取决于你在<code>defaultdict</code>传入的参数。如果传入的是<code>str</code>那么默认值就是空字符串，如果是<code>int</code>那么默认值就是0.当然你也可以传入自定义的一个函数，从而控制这个默认值。例如我自定义一个函数，用于返回当前的时间，运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-30-22-59-25.png" alt=""/></p>
+<p>当插入的 key 不存在时，就自动以当前时间作为默认值，并存入到字典中。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

@@ -1,0 +1,38 @@
+如<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>任意给出一个正整数，例如<code>4523</code>，如何快速统计它的二进制值里面有几个<code>1</code>？</p>
+<a id="more"/>
+<p>我们知道，在 Python 里面，查看一个数字的二进制函数为：<code>bin</code>，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>bin(<span class="number">4523</span>)</span><br/><span class="line"><span class="string">'0b1000110101011'</span></span><br/></pre></td></tr></table></figure>
+<p>所以我们很快就能想到一个统计方案：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line">one_num = <span class="number">0</span></span><br/><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> bin(<span class="number">4523</span>)[<span class="number">2</span>:]:</span><br/><span class="line">    <span class="keyword">if</span> i == <span class="string">'1'</span>:</span><br/><span class="line">        count += <span class="number">1</span></span><br/><span class="line">print(<span class="string">f'数字4523的二进制值里面，一共有<span class="subst">{count}</span>个1'</span>)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-24-21-29-12.png" alt=""/></p>
+<p>如果使用这个方法，由于4523的二进制值有13位，所以 for 循环需要执行13次才能完成统计。更一般的结论，一个正整数 <code>n</code>，它的二进制值有$log_2{n} + 1$位，所以这种解法的时间复杂度始终为<code>O(logn)</code>，那么我们有没有什么办法优化这个算法呢？</p>
+<p>这个时候，我们观察一个现象：</p>
+<p>给出一个二进制的值<code>1000110101011</code>与这个值减1的值<code>1000110101010</code>，他们做与运算，结果为：<code>1000110101010</code>。可以看到，最右侧的1变成了0.</p>
+<p>现在我们再对<code>1000110101010</code>与它减1的值做与运算：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line"><span class="number">1000110101010</span> &amp; <span class="number">1000110101001</span> = <span class="number">1000110101000</span></span><br/></pre></td></tr></table></figure>
+<p>此时，最右侧的1又变成了0.</p>
+<p>我们可以证明，假设有一个二进制数 <code>n</code>与<code>n-1</code>做与运算，它的效果相当于把这个二进制数最右侧的1变成0.</p>
+<p>于是，给定一个正整数<code>x</code>，只需要统计移除多少位的最右侧的1以后，这个数字变成了0，就能知道它里面有多少个1.于是我们可以写出如下的代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line">count = <span class="number">0</span></span><br/><span class="line">n = <span class="number">4523</span></span><br/><span class="line"><span class="keyword">while</span> n:</span><br/><span class="line">    n = n &amp; (n - <span class="number">1</span>)</span><br/><span class="line">    count += <span class="number">1</span></span><br/><span class="line">print(count)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-24-21-42-25.png" alt=""/></p>
+<p>使用这种算法，最坏情况下，只有在数字 n 对应的二进制全部都是1的情况下(3, 7, 15, 31, 63….)，会执行$log_2n+1$次循环。而一般情况下，如果只有1个1，那么只需要循环1次，如果有2个1，只需要循环2次。大大提高了运算效率。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

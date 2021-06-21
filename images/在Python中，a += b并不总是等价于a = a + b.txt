@@ -1,0 +1,33 @@
+在<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>大家经常在一些博客中看到这样的说法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">a += 1</span><br/></pre></td></tr></table></figure>
+<p>等价于</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/></pre></td><td class="code"><pre><span class="line">a = a + 1</span><br/></pre></td></tr></table></figure>
+<p>这种说法实际上并不准确。</p>
+<p>我们来看一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; a = [1, 2, 3]</span><br/><span class="line">&gt;&gt;&gt; a += (4,)</span><br/><span class="line">&gt;&gt;&gt; a</span><br/><span class="line">[1, 2, 3, 4]</span><br/><span class="line"/><br/><span class="line">&gt;&gt;&gt; a = [1, 2, 3]</span><br/><span class="line">&gt;&gt;&gt; a = a + (4,)</span><br/><span class="line">Traceback (most recent call last):</span><br/><span class="line">  File "&lt;stdin&gt;", line 1, in &lt;module&gt;</span><br/><span class="line">TypeError: can only concatenate list (not "tuple") to list</span><br/></pre></td></tr></table></figure>
+<p>这里报错了，说明<code>a += b</code>和<code>a = a + b</code>并不是完全等价的。</p>
+<a id="more"/>
+<p>实际上，这是由于<code>+=</code>会首先调用左边这个对象的<code>__iadd__</code>方法，如果没有<code>__iadd__</code>方法，就会调用<code>__add__</code>方法。但是如果直接使用<code>+</code>号，就会直接调用<code>__add__</code>方法。而对于字符串、数字、浮点数这种不可变对象，他们没有<code>__iadd__</code>方法，所以对他们来说，<code>a += b</code> 与 <code>a = a + b</code>是等价的。</p>
+<p>但是列表是一个可变的容器，它内部是有<code>__iadd__</code>这个方法。对于列表来说，它的<code>__iadd__</code>方法的原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/></pre></td><td class="code"><pre><span class="line">def __iadd__(self, values):</span><br/><span class="line">    self.extend(values)</span><br/><span class="line">    return self</span><br/></pre></td></tr></table></figure>
+<p>这一段代码你可以在这里看到：<a href="https://github.com/python/cpython/blob/1b5f9c9653f348b0aa8b7ca39f8a9361150f7dfc/Lib/_collections_abc.py" target="_blank" rel="noopener">https://github.com/python/cpython/blob/1b5f9c9653f348b0aa8b7ca39f8a9361150f7dfc/Lib/_collections_abc.py</a></p>
+<p>所以说，当你使用<code>+=</code>连接列表和元组的时候，本质上是列表使用<code>extend</code>把元组的内容添加进去。这样是不会报错的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>a.extend((<span class="number">4</span>,))</span><br/><span class="line"><span class="meta">&gt;&gt;&gt; </span>a</span><br/><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br/></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

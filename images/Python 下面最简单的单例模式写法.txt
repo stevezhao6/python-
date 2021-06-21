@@ -1,0 +1,44 @@
+P<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>二十几种设计模式中，单例模式是最简单最常用的一种。在其他语言里面实现单例模式要写不少代码，但是在 Python 里面，有一种非常简单的单例模式写法。</p>
+<a id="more"/>
+<p>为了演示这种简单的写法，我们首先创建一个文件，<code>DBUtil.py</code>文件，用来模拟数据库操作类。这个文件里面的代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DBUtil</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br/><span class="line">        self.conn = self.connect()</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">connect</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'创建数据库连接'</span>)</span><br/><span class="line">        <span class="keyword">return</span> <span class="string">'connect'</span></span><br/><span class="line">  </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(self, data)</span>:</span></span><br/><span class="line">        print(<span class="string">f'写入数据：<span class="subst">{data}</span>'</span>)</span><br/><span class="line">   </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">read</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'从数据库中读取数据'</span>)</span><br/><span class="line">        <span class="keyword">return</span> <span class="number">123</span></span><br/></pre></td></tr></table></figure>
+<p>现在我们创建两个文件：<code>a.py</code>和<code>b.py</code>，用来模拟在一个工程里面的两个不同地方同时调用数据库操作类并初始化的过程。</p>
+<p><code>a.py</code>内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> DBUtil <span class="keyword">import</span> DBUtil</span><br/><span class="line"><span class="keyword">from</span> b <span class="keyword">import</span> run</span><br/><span class="line"/><br/><span class="line">data = run()</span><br/><span class="line">db_util = DBUtil()</span><br/><span class="line">db_util.write(data)</span><br/></pre></td></tr></table></figure>
+<p><code>b.py</code>的内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> DBUtil <span class="keyword">import</span> DBUtil</span><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">()</span>:</span></span><br/><span class="line">    db_util = DBUtil()</span><br/><span class="line">    data = db_util.read()</span><br/><span class="line">    <span class="keyword">return</span> data</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-12-22-52-47.png" alt=""/></p>
+<p>可以看到，<code>创建数据库连接</code>被打印了两次，说明<code>DBUtil</code>类被实例化了两次。对应到真实的项目中，就是创建了多个到数据库的链接。这样是很浪费资源的。</p>
+<p>当然，你可以在 <code>a.py</code>中初始化<code>DBUtil</code>，然后把这个对象作为参数传入<code>run</code>函数里面，再<code>run</code>函数里面调用这个对象的<code>read()</code>方法。</p>
+<p>但是在实际项目中，往往会出现很多层的调用，如果要把一个对象一层一层传下去，不仅让参数列表显得杂乱，还容易漏掉或者搞错顺序。</p>
+<p>所以，使用单例模式就能避免通过参数传递对象，但又不会创建多个数据库连接。</p>
+<p>网上关于单例模式的代码有很多。本文将会介绍最简单的一种，利用 Python 的<code>import</code>机制。在 Python 里面，一个模块只会被导入1次，如果多次使用<code>import xxx</code>导入同一个模块，后面的导入语句会被自动忽略。你用这个机制，我们就能很容易实现单例模式。</p>
+<p>修改<code>DBUtil.py</code>，在它的最下面加上一行代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DBUtil</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br/><span class="line">        self.conn = self.connect()</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">connect</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'创建数据库连接'</span>)</span><br/><span class="line">        <span class="keyword">return</span> <span class="string">'connect'</span></span><br/><span class="line">  </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">write</span><span class="params">(self, data)</span>:</span></span><br/><span class="line">        print(<span class="string">f'写入数据：<span class="subst">{data}</span>'</span>)</span><br/><span class="line">   </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">read</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'从数据库中读取数据'</span>)</span><br/><span class="line">        <span class="keyword">return</span> <span class="number">123</span></span><br/><span class="line"/><br/><span class="line">db_util = DBUtil()</span><br/></pre></td></tr></table></figure>
+<p>修改<code>a.py</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> DBUtil <span class="keyword">import</span> db_util</span><br/><span class="line"><span class="keyword">from</span> b <span class="keyword">import</span> run</span><br/><span class="line"/><br/><span class="line">data = run()</span><br/><span class="line">db_util.write(data)</span><br/></pre></td></tr></table></figure>
+<p>修改<code>b.py</code>:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> DBUtil <span class="keyword">import</span> db_util</span><br/><span class="line"/><br/><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">()</span>:</span></span><br/><span class="line">    data = db_util.read()</span><br/><span class="line">    <span class="keyword">return</span> data</span><br/></pre></td></tr></table></figure>
+<p>运行以后的效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-11-12-23-02-25.png" alt=""/></p>
+<p>可以看到，<code>创建数据库连接</code>只打印了1次，说明单例模式成功。</p>
+<p>这种单例模式非常简单，但是有一个弊端，就是无法实现懒加载。程序刚刚开始运行，<code>DBUtil</code>类就会被实例化，无法做到等到需要的时候才实例化。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      

@@ -1,0 +1,77 @@
+跟<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在看Kenneth Reitz大神的<a href="https://github.com/kennethreitz/records" target="_blank" rel="noopener">Records项目</a>时，注意到在Readme中，读取数据有三种写法：</p>
+<blockquote>
+<p>Values can be accessed many ways: row.user_email, row[‘user_email’], or row[3]</p>
+</blockquote>
+<p>假设一个数据表如下所示：</p>
+<table>
+<thead>
+<tr>
+<th>username</th>
+<th>active</th>
+<th>name</th>
+<th>user_email</th>
+<th>timezone</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model-t</td>
+<td>True</td>
+<td>Henry Ford</td>
+<td><a href="/cdn-cgi/l/email-protection#cfa2a0abaaa3e2bb8fa8a2aea6a3e1aca0a2" target="_blank" rel="noopener"><span class="__cf_email__" data-cfemail="75181a1110195801351218141c195b161a18">[email protected]</span></a></td>
+<td>2016-02-06 22:28:23.894202</td>
+</tr>
+</tbody>
+</table>
+<p>那么，当你想读取user_email这一列的时候，除了可以使用<code>row.user_email</code>和<code>row['user_email']</code>以外，由于<code>user_email</code>在第3列（username是第0列），所以还可以使用<code>row[3]</code>来读取。</p>
+<p>今天我们就来研究一下，他是如何实现这个功能的。</p>
+<p>假设我们现在有一个类：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, age)</span>:</span></span><br/><span class="line">        self.name = name</span><br/><span class="line">        self.age = age</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">walk</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'i am walk'</span>)</span><br/></pre></td></tr></table></figure>
+<p>基于这个类初始化一个对象kingname:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/></pre></td><td class="code"><pre><span class="line">kingname = People(<span class="string">'kingname'</span>, <span class="number">26</span>)</span><br/><span class="line">print(kingname.age)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-02-56.png" alt=""/></p>
+<p>可以看到，我们已经实现了类似于records项目中的<code>row.user_email</code>的写法。</p>
+<p>但是当我们想像字典一样取读取的时候，就会报错，如下图所示。</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-04-11.png" alt=""/></p>
+<p>此时，为了让一个对象可以像字典一样被读取，我们需要实现它的<code>__getitem__</code>方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, age)</span>:</span></span><br/><span class="line">        self.info = {<span class="string">'name'</span>: name,</span><br/><span class="line">                     <span class="string">'age'</span>: age}</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">walk</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'i am walk'</span>)</span><br/><span class="line"/><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">return</span> self.info.get(key, <span class="string">'不存在'</span>)</span><br/></pre></td></tr></table></figure>
+<p>此时就可以像字典一样去读取了，运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-10-00.png" alt=""/></p>
+<p>但新的问题又来了，不能直接读取使用<code>kinganme.age</code>读取数据了，这样写会导致报错，如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-10-57.png" alt=""/></p>
+<p>为了解决这个问题，我们再来实现这个类的<code>__getattr__</code>方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, age)</span>:</span></span><br/><span class="line">        self.info = {<span class="string">'name'</span>: name,</span><br/><span class="line">                     <span class="string">'age'</span>: age}</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">walk</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'i am walk'</span>)</span><br/><span class="line"/><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">return</span> self.info.get(key, <span class="string">'不存在'</span>)</span><br/><span class="line">        </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">return</span> self.info.get(key, <span class="string">'不存在'</span>)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-13-11.png" alt=""/></p>
+<p>那么如何实现records里面的<code>row[3]</code>这种写法呢？这就需要先解释一下，records这个库是用来做什么的，以及它的数据是如何存放的。</p>
+<p>K大写的records这个库，是用于来更加方便地读写SQL数据库，避免繁琐地写各种SQL语句。</p>
+<p>这个库的源代码只有一个文件：<a href="https://github.com/kennethreitz/records/blob/master/records.py" target="_blank" rel="noopener">源代码</a></p>
+<p>我们今天要研究的这个写法，在<code>Record</code>这个类里面。这个类用来保存MySQL中的一行数据。<code>Record</code>这个类包含两个属性，分别为<code>_keys</code>和<code>_values</code>，其中<code>_keys</code>用于记录所有的字段名，<code>_values</code>用于记录一行的所有值。字段名和值是按顺序一一对应的。</p>
+<p>例如<code>_keys</code>里面下标为3表示字段名<code>user_email</code>，那么<code>_values</code>里面下标为3的数据就是<code>user_email</code>的值。</p>
+<p>正式由于这样一个一一对应的关系，所以<code>row[3]</code>才能实现<code>row['user_email']</code>、<code>row.user_email</code>相同的效果。</p>
+<p>回到我们的People类，为了实现相同的目的，我们再次修改代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br/><span class="line">2</span><br/><span class="line">3</span><br/><span class="line">4</span><br/><span class="line">5</span><br/><span class="line">6</span><br/><span class="line">7</span><br/><span class="line">8</span><br/><span class="line">9</span><br/><span class="line">10</span><br/><span class="line">11</span><br/><span class="line">12</span><br/><span class="line">13</span><br/><span class="line">14</span><br/><span class="line">15</span><br/><span class="line">16</span><br/><span class="line">17</span><br/><span class="line">18</span><br/><span class="line">19</span><br/><span class="line">20</span><br/><span class="line">21</span><br/></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">People</span>:</span></span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, age)</span>:</span></span><br/><span class="line">        self._keys = [<span class="string">'name'</span>, <span class="string">'age'</span>]</span><br/><span class="line">        self._values = [name, age]</span><br/><span class="line">    </span><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">walk</span><span class="params">(self)</span>:</span></span><br/><span class="line">        print(<span class="string">'i am walk'</span>)</span><br/><span class="line"/><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">if</span> isinstance(key, int):</span><br/><span class="line">            <span class="keyword">if</span> <span class="number">0</span> &lt;= key &lt; len(self._keys):</span><br/><span class="line">                <span class="keyword">return</span> self._values[key]</span><br/><span class="line">            <span class="keyword">return</span> <span class="string">'索引超出边界'</span></span><br/><span class="line"/><br/><span class="line">        index = self._keys.index(key)</span><br/><span class="line">        <span class="keyword">if</span> index == <span class="number">-1</span>:</span><br/><span class="line">            <span class="keyword">return</span> <span class="string">'Key不存在'</span></span><br/><span class="line">        <span class="keyword">return</span> self._values[index]</span><br/><span class="line"/><br/><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span><span class="params">(self, key)</span>:</span></span><br/><span class="line">        <span class="keyword">return</span> self.__getitem__(key)</span><br/></pre></td></tr></table></figure>
+<p>运行效果如下图所示：</p>
+<p><img src="https://kingname-1257411235.cos.ap-chengdu.myqcloud.com/2019-07-07-22-25-28.png" alt=""/></p>
+<p>需要说明的是，无论是使用<code>kingname['key']</code>还是<code>kingname[1]</code>，他们都会进入到<code>__getitem__</code>方法中去。</p>
+<p>我这里给出的例子相较于<code>records</code>项目的代码做了简化，不过关键的部分都已经囊括了进来。</p>
+<p>最后，推荐有兴趣的同学通读records这个项目的源代码，你将会从K大的代码中学到非常多的东西。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+      
